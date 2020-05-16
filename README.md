@@ -22,7 +22,7 @@ I'll be eating only a [complete protein](https://www.foodnetwork.com/recipes/alt
 
 ### Thirty-Eight (WT)
 
-[Code](./thirty-eight) / Hosted (Coming Soon)
+[Code](./thirty-eight) / [Hosted](https://crhallberg.com/cjam/thirty-eight)
 
 Ok, this is a political dice roller to answer the question: is a game fun if the AI tells you who's going to win?
 
