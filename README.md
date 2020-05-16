@@ -37,3 +37,5 @@ I'm going to code for 25 minutes, test/play for 5. No looking when coding, draft
 ## Credits
 
 Thank you to [Steven Lambert](https://stevenklambert.com/) for [Kontra.js](https://straker.github.io/kontra/), which may be the only game engine I'll ever need!
+
+Thank you to Brett Taylor for a [CUSTOM POMODORO PLAYLIST](https://open.spotify.com/playlist/1m6xuHSKOHA1vln4OdtDSb)???? OH HELL YEAH!

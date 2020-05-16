@@ -10,6 +10,8 @@ After 20 rounds, all Districts will be rolled and whoever wins the most District
 
 ## Actions
 
+You earn $5 for every Influence face you have.
+
 ### Move ($10)
 
 Move to a connected District and add an Influence to that District.
@@ -54,14 +56,13 @@ In the RURAL Districts, you can move to one of the SUBURBS and to neighboring RU
 - [x] Dice Adding
 - [x] Income
   - [x] \$5 per face?
+- [x] Prices
 - [ ] Moves
   - [x] Move one space
   - [x] Town Hall
   - [x] Fly
-  - [ ] Commercial
   - [ ] Attack Ad
-- [x] Prices
-  - [x] \$10 to move
-  - [x] \$100 to fly
-  - [x] \$1000 for TV ad
+  - [ ] Commercial
+- [ ] Player Customization
 - [ ] Map Layout
+- [ ] More than two players

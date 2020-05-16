@@ -1,5 +1,5 @@
 import kontra from "../_shared/js/vendor/kontra.min.js";
-import { _setup, comma, spread } from "../_shared/js/utils.js";
+import { _setup, comma, spread, pickRandom, shuffle } from "../_shared/js/utils.js";
 
 import PALETTE from "./primer-colors.js";
 
@@ -9,14 +9,14 @@ let { a, c } = _setup("a");
 const { initPointer, onPointerDown, onPointerUp, pointer } = kontra;
 initPointer();
 
-let regionWidth = 300;
+let regionWidth = 400;
 let regionHeight = 100;
 function makeRegion({ x, y, type }) {
   let startingSides = 1;
   if (type == "suburban") {
     startingSides = 2;
   } else if (type == "urban") {
-    startingSides = 3;
+    startingSides = 4;
   }
   let r = {
     x,
@@ -40,15 +40,21 @@ function drawRegion(region) {
   c.save();
   c.translate(region.x, region.y);
 
-  c.fillStyle = typeFills[region.type];
+  let faceShade = 500;
+  if (typeof region.final != "undefined") {
+    c.fillStyle = PALETTE[region.final][400];
+    faceShade = 200;
+  } else {
+    c.fillStyle = typeFills[region.type];
+  }
   c.fillRect(0, 0, region.width, region.height);
   c.strokeRect(0, 0, region.width, region.height);
 
-  c.fillStyle = PALETTE.red[500];
+  c.fillStyle = PALETTE.red[faceShade];
   for (let i = 0; i < region.red; i++) {
     c.fillRect(i * 40 + 10, 10, 30, 30);
   }
-  c.fillStyle = PALETTE.blue[500];
+  c.fillStyle = PALETTE.blue[faceShade];
   for (let i = 0; i < region.blue; i++) {
     c.fillRect(i * 40 + 10, 60, 30, 30);
   }
@@ -72,13 +78,10 @@ for (let i = 0; i < 7; i++) {
   );
 }
 
-let WINNING = 0;
 let pollHistory = [];
 function calculateOdds() {
-  let total = regions.reduce((t, r) => t * (r.red + r.blue), 1);
   let redWins = 0;
   let blueWins = 0;
-  let ties = 0;
   let queue = [{ red: 0, blue: 0, depth: 0 }];
   while (queue.length > 0) {
     let { red, blue, depth } = queue.pop();
@@ -99,13 +102,6 @@ function calculateOdds() {
     for (let i = 0; i < nRegion.blue; i++) {
       queue.push({ red, blue: blue + 1, depth: depth + 1 });
     }
-  }
-  if (redWins > blueWins) {
-    WINNING = 1;
-  } else if (blueWins > redWins) {
-    WINNING = 2;
-  } else {
-    WINNING = 0;
   }
   pollHistory.push({ redWins, blueWins });
 }
@@ -188,7 +184,7 @@ function drawPlayer(player, i) {
     regions[player.visiting].y + regionHeight / 2
   );
   c.rotate(Math.PI / 4);
-  c.fillRect(-40, -40, 80, 80);
+  c.fillRect(-25, -25, 50, 50);
   c.restore();
 
   if (turn === i) {
@@ -273,7 +269,7 @@ function drawButton(btn) {
 function makeButton(btn) {
   return Object.assign({}, btn, {
     active: btn.active ?? true,
-    width: btn.width ?? c.measureText(text) + 32,
+    width: btn.width ?? c.measureText(btn.text).width + 32,
     height: btn.height ?? 50,
     disabled: btn.disabled ?? false,
   });
@@ -290,10 +286,21 @@ let network = {
   6: new Set([2, 5]),
 };
 let moveBtns = [];
+let attackBtns = [];
+let isFlying = false;
 function movePlayerTo(index) {
+  PLAYERS[turn].money -= isFlying ? 100 : 10;
   PLAYERS[turn].visiting = index;
-  PLAYERS[turn].money -= 10;
   regions[index][PLAYERS[turn].color] += 1;
+  nextTurn();
+}
+function runAttackAd(index) {
+  PLAYERS[turn].money -= 1000;
+  let region = regions[index];
+  let faces = region.red + region.blue;
+  let roll = Math.ceil(Math.random() * faces);
+  region.red = roll;
+  region.blue = faces - roll;
   nextTurn();
 }
 for (let i = 0; i < regions.length; i++) {
@@ -309,8 +316,17 @@ for (let i = 0; i < regions.length; i++) {
   });
   moveBtns.push(btn);
   buttons.push(btn);
+  let aB = Object.assign({}, btn, {
+    x: btn.x - 20,
+    width: 100,
+    text: "Attack",
+    action: () => runAttackAd(i),
+  });
+  attackBtns.push(aB);
+  buttons.push(aB);
 }
 function showMoveButtons() {
+  isFlying = false;
   resetButtons();
   let start = PLAYERS[turn].visiting;
   moveBtns.forEach((btn, i) => {
@@ -321,40 +337,56 @@ function hideMoveButtons() {
   moveBtns.forEach((btn) => (btn.active = false));
 }
 
-let spaceBtns = spread(200, 500, 5);
+let actionBtnX = a.width / 2;
+let spaceActionBtns = spread(200, 500, 5);
 let actionBtns = [];
 let moveAction = makeButton({
   text: "MOVE ($10)",
   cost: 10,
-  x: a.width / 2 - 100,
-  y: spaceBtns(0),
+  x: actionBtnX,
+  y: spaceActionBtns(0),
   width: 350,
   action: showMoveButtons,
 });
 actionBtns.push(moveAction);
 buttons.push(moveAction);
 
-let rallyAction = makeButton({
-  text: "HOLD RALLY ($50)",
-  cost: 50,
-  x: a.width / 2 - 100,
-  y: spaceBtns(1),
-  width: 350,
+let rallyConfirm = makeButton({
+  text: "✔️",
+  x: actionBtnX + 350,
+  y: spaceActionBtns(1),
+  active: false,
   action: function () {
+    PLAYERS[turn].money -= 50;
     regions[PLAYERS[turn].visiting][PLAYERS[turn].color] += 2;
+    rallyConfirm.active = false;
     nextTurn();
   },
 });
-actionBtns.push(rallyAction);
+actionBtns.push(rallyConfirm);
+buttons.push(rallyConfirm);
+let rallyAction = makeButton({
+  text: "HOLD RALLY ($50)",
+  cost: 50,
+  x: actionBtnX,
+  y: spaceActionBtns(1),
+  width: 350,
+  action: function () {
+    resetButtons();
+    rallyConfirm.active = true;
+  },
+});
 buttons.push(rallyAction);
 
 let flyAction = makeButton({
   text: "FLY ($100)",
   cost: 100,
-  x: a.width / 2 - 100,
-  y: spaceBtns(2),
+  x: actionBtnX,
+  y: spaceActionBtns(2),
   width: 350,
   action: function () {
+    isFlying = true;
+    resetButtons();
     moveBtns.forEach((btn, i) => (btn.active = i !== PLAYERS[turn].visiting));
   },
 });
@@ -364,11 +396,12 @@ buttons.push(flyAction);
 let attackAction = makeButton({
   text: "RUN ATTACK AD ($1000)",
   cost: 1000,
-  x: a.width / 2 - 100,
-  y: spaceBtns(3),
+  x: actionBtnX,
+  y: spaceActionBtns(3),
   width: 350,
   action: function () {
-    // TODO:
+    resetButtons();
+    attackBtns.forEach((btn) => (btn.active = true));
   },
 });
 actionBtns.push(attackAction);
@@ -377,18 +410,73 @@ buttons.push(attackAction);
 let tvAction = makeButton({
   text: "BUY TV AD ($2000)",
   cost: 2000,
-  x: a.width / 2 - 100,
-  y: spaceBtns(4),
+  x: actionBtnX,
+  y: spaceActionBtns(4),
   width: 350,
   action: function () {
-    // TODO:
+    resetButtons();
+    tvRegionBtns.forEach((btn) => (btn.active = true));
   },
 });
 actionBtns.push(tvAction);
 buttons.push(tvAction);
 
+let tvRegionBtns = [];
+let tvUrban = makeButton({
+  text: "+4",
+  x: regionWidth - 84,
+  y: 36,
+  width: 80,
+  height: 60,
+  active: false,
+  action: function () {
+    PLAYERS[turn].money -= 2000;
+    let c = PLAYERS[turn].color;
+    regions.forEach((r) => (r[c] += r.type == "urban" ? 4 : 0));
+    nextTurn();
+  },
+});
+tvRegionBtns.push(tvUrban);
+buttons.push(tvUrban);
+
+let tvSub = makeButton({
+  text: "+2",
+  x: regionWidth - 84,
+  y: 146,
+  width: 80,
+  height: 170,
+  active: false,
+  action: function () {
+    PLAYERS[turn].money -= 2000;
+    let c = PLAYERS[turn].color;
+    regions.forEach((r) => (r[c] += r.type == "suburban" ? 2 : 0));
+    nextTurn();
+  },
+});
+tvRegionBtns.push(tvSub);
+buttons.push(tvSub);
+
+let tvRural = makeButton({
+  text: "+1",
+  x: regionWidth - 84,
+  y: 366,
+  width: 80,
+  height: 390,
+  active: false,
+  action: function () {
+    PLAYERS[turn].money -= 2000;
+    let c = PLAYERS[turn].color;
+    regions.forEach((r) => (r[c] += r.type == "rural" ? 1 : 0));
+    nextTurn();
+  },
+});
+tvRegionBtns.push(tvRural);
+buttons.push(tvRural);
+
 function resetButtons() {
   hideMoveButtons();
+  attackBtns.forEach((btn) => (btn.active = false));
+  tvRegionBtns.forEach((btn) => (btn.active = false));
   actionBtns.forEach((btn) => (btn.disabled = btn.cost > PLAYERS[turn].money));
 }
 
@@ -396,6 +484,7 @@ function resetButtons() {
  * GameLoop
  */
 let turn = -1;
+let round = -1;
 let PLAYERS = [
   { color: "red", name: "Chris", visiting: 0, money: 0 },
   { color: "blue", name: "Nicole", visiting: 0, money: 0 },
@@ -406,14 +495,19 @@ function nextTurn() {
   requestAnimationFrame(calculateOdds);
   income();
   resetButtons();
+  round += 1;
+  if (round === 40) {
+    alert("That's it! Time to roll!");
+    regions.forEach((r) => {
+      let bag = [...Array(r.red).fill("red"), ...Array(r.red).fill("blue")];
+      shuffle(bag);
+      r.final = pickRandom(bag);
+    });
+  }
 }
 
 function update(dt) {}
 
-let action = "move";
-let drawMove = {
-  move: showMoveButtons,
-};
 function render() {
   let color = PLAYERS[turn].color;
   c.fillStyle = PALETTE[color]["000"];
