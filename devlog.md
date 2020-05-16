@@ -25,3 +25,7 @@ First shot of Fireball taken. Wow! It's worse than I forgot!
 ## 17:00
 
 Round 2. Fight!
+
+## 18:00
+
+Controller worked flawlessly on the FIRST TRY! ![iamagoldengod.gif]().

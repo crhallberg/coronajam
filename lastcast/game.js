@@ -5,6 +5,10 @@ import PALETTE from "../_shared/primer-colors.js";
 
 const { GameLoop } = kontra;
 let { a, c } = _setup("a");
+const { keyPressed, bindKeys, keyMap } = kontra;
+keyMap["ShiftLeft"] = "shift";
+keyMap["ShiftRight"] = "shift";
+keyMap[16] = "shift";
 kontra.initKeys();
 
 /**
@@ -26,13 +30,38 @@ function update(dt) {
   PLAYER.y += PLAYER.dy * SPEED * dt;
   SCREEN.x = PLAYER.x;
   SCREEN.y = PLAYER.y;
+
+  if (HELD && !keyPressed("shift")) {
+    PLAYER.x = HELD.x;
+    PLAYER.y = HELD.y;
+    HELD = null;
+  }
 }
+
+let HELD = null;
+bindKeys("shift", function () {
+  HELD = {
+    x: PLAYER.x,
+    y: PLAYER.y,
+  };
+  console.log("HOLD");
+});
 
 let gridSize = Math.min(44, Math.floor(a.width / 42) * 2);
 let gridHalf = gridSize / 2;
 let gridIso = gridSize / 3;
 function render() {
   c.clearRect(0, 0, a.width, a.height);
+
+  if (HELD) {
+    c.fillStyle = PALETTE.pink[100];
+    c.fillRect(
+      HELD.x - gridHalf,
+      HELD.y - gridHalf,
+      gridSize * 2,
+      gridSize * 2
+    );
+  }
 
   c.save();
   c.translate(PLAYER.x, PLAYER.y);

@@ -4,7 +4,7 @@ Last Cast is a press-your-luck dungeon crawler based on holding a spell in DND. 
 
 ## Controls
 
-| `WASD` / `⬆️⬇️⬅️➡️ | Movement |
+| `WASD` / ⬆️⬇️⬅️➡️ | Movement |
 | `[SPACE]` | Interact |
 | `[SHIFT]` | Start to concentrate. Releasing `[SHIFT]` will return you to where you pressed it, goodies, wounds, and all. |
 
@@ -13,12 +13,13 @@ Last Cast is a press-your-luck dungeon crawler based on holding a spell in DND. 
 ## Todo
 
 - [x] Movement Controls
-- [ ] Shift Spell
+- [x] Shift Spell
 - [ ] Collision
 - [ ] Empty Maze
 - [ ] Populate the Maze
 
 ## Post-Jam
 
+- [ ] Shift Particles
 - [ ] Random Mazes
 - [ ] Slow Motion Peril
