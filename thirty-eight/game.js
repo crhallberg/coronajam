@@ -1,7 +1,6 @@
 import kontra from "../_shared/js/vendor/kontra.min.js";
 import { _setup, comma, spread, pickRandom, shuffle } from "../_shared/js/utils.js";
-
-import PALETTE from "./primer-colors.js";
+import PALETTE from "../_shared/primer-colors.js";
 
 const { GameLoop } = kontra;
 let { a, c } = _setup("a");

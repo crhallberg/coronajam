@@ -12,7 +12,7 @@ Last Cast is a press-your-luck dungeon crawler based on holding a spell in DND. 
 
 ## Todo
 
-- [ ] Movement Controls
+- [x] Movement Controls
 - [ ] Shift Spell
 - [ ] Collision
 - [ ] Empty Maze
