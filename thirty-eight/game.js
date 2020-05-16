@@ -1,8 +1,12 @@
 import kontra from "../_shared/js/vendor/kontra.min.js";
-import { _setup } from "../_shared/js/utils.js";
+import { _setup, comma } from "../_shared/js/utils.js";
 
-const { GameLoop, initPointer, onPointerDown, pointer } = kontra;
+import PALETTE from "./primer-colors.js";
+
+const { GameLoop } = kontra;
 let { a, c } = _setup("a");
+
+const { initPointer, onPointerDown, pointer } = kontra;
 initPointer();
 
 function makeRegion({ x, y, type }) {
@@ -26,9 +30,9 @@ function makeRegion({ x, y, type }) {
 }
 
 let typeFills = {
-  rural: "#c6f6d5",
-  suburban: "#feebc8",
-  urban: "#e9d8fd",
+  rural: PALETTE.green[100],
+  suburban: PALETTE.orange[100],
+  urban: PALETTE.purple[100],
 };
 function drawRegion(region) {
   c.save();
@@ -38,11 +42,11 @@ function drawRegion(region) {
   c.fillRect(0, 0, region.width, region.height);
   c.strokeRect(0, 0, region.width, region.height);
 
-  c.fillStyle = "#e53e3e";
+  c.fillStyle = PALETTE.red[500];
   for (let i = 0; i < region.red; i++) {
     c.fillRect(i * 40 + 10, 10, 30, 30);
   }
-  c.fillStyle = "#5a67d8";
+  c.fillStyle = PALETTE.blue[500];
   for (let i = 0; i < region.blue; i++) {
     c.fillRect(i * 40 + 10, 60, 30, 30);
   }
@@ -70,7 +74,6 @@ let WINNING = 0;
 let pollHistory = [];
 function calculateOdds() {
   let total = regions.reduce((t, r) => t * (r.red + r.blue), 1);
-  console.log(`Total: ${total}`);
   let redWins = 0;
   let blueWins = 0;
   let ties = 0;
@@ -109,68 +112,80 @@ function drawPollHistory() {
   c.save();
   c.translate(a.width - 216, a.height - 16);
 
-  c.fillStyle = "#fff";
+  let { redWins: rW, blueWins: bW } = pollHistory[pollHistory.length - 1];
+  let ratio = rW / (rW + bW);
+  if (ratio > 0.51) {
+    c.fillStyle = PALETTE.red[100];
+  } else if (ratio < 0.49) {
+    c.fillStyle = PALETTE.blue[100];
+  } else {
+    c.fillStyle = PALETTE.gray[100];
+  }
   c.fillRect(0, -200, 200, 200);
 
   let step = 200 / pollHistory.length;
-  let last = 100;
   let redRatio, redWins, blueWins;
+  let blueRatios = [];
+
+  c.strokeStyle = PALETTE.red[500];
+  c.beginPath();
+  c.moveTo(0, -100);
   for (let i = 0; i < pollHistory.length; i++) {
     redWins = pollHistory[i].redWins;
     blueWins = pollHistory[i].blueWins;
     redRatio = (200 * redWins) / (redWins + blueWins);
-    c.beginPath();
-    c.moveTo(i * step, -last);
+    blueRatios.push(redRatio - 200);
     c.lineTo((i + 1) * step, -redRatio);
-    c.strokeStyle = "#e53e3e";
-    c.stroke();
-    c.closePath();
-
-    c.beginPath();
-    c.moveTo(i * step, last - 200);
-    c.lineTo((i + 1) * step, redRatio - 200);
-    c.strokeStyle = "#5a67d8";
-    c.stroke();
-    c.closePath();
-
-    last = redRatio;
   }
+  c.stroke();
+  c.closePath();
+
+  c.strokeStyle = PALETTE.blue[500];
+  c.beginPath();
+  c.moveTo(0, -100);
+  for (let i = 1; i < blueRatios.length; i++) {
+    c.lineTo((i + 1) * step, blueRatios[i]);
+  }
+  c.stroke();
+  c.closePath();
 
   c.textAlign = "right";
-  if (redRatio > 101) {
-    c.fillStyle = "#9b2c2c";
+  if (redRatio > 102) {
+    c.fillStyle = PALETTE.red[800];
     c.fillText(
-      `RED WINS ${redWins} out of ${redWins + blueWins} elections`,
+      `RED wins ${comma(redWins)} out of ${comma(
+        redWins + blueWins
+      )} elections`,
       200,
       -230
     );
-  } else if (redRatio < 99) {
-    c.fillStyle = "#434190";
+  } else if (redRatio < 98) {
+    c.fillStyle = PALETTE.blue[800];
     c.fillText(
-      `BLUE WINS ${redWins} out of ${redWins + blueWins} elections`,
+      `BLUE wins ${comma(blueWins)} out of ${comma(
+        redWins + blueWins
+      )} elections`,
       200,
       -230
     );
   } else {
-    c.fillStyle = "#2d3748";
+    c.fillStyle = PALETTE.gray[800];
     c.fillText("Too close to call.", 200, -230);
   }
 
-  c.strokeStyle = "#000";
+  c.strokeStyle = PALETTE.gray[900];
   c.strokeRect(0, -200, 200, 200);
   c.restore();
 }
 
 let turn = "red";
 onPointerDown(function mouseDown() {
-  console.log("mouseDown");
   for (let i = 0; i < regions.length; i++) {
     let rx = pointer.x - regions[i].x;
     let ry = pointer.y - regions[i].y;
-    console.log(rx, ry);
     if (rx > 0 && ry > 0 && rx < regions[i].width && ry < regions[i].height) {
       regions[i][turn] += 1;
-      calculateOdds();
+      requestAnimationFrame(calculateOdds);
       turn = turn == "red" ? "blue" : "red";
       break;
     }
@@ -182,20 +197,24 @@ calculateOdds();
 /**
  * GameLoop
  */
+let PLAYERS = {
+  red: { visiting: 0, money: 0 },
+  blue: { visiting: 0, money: 0 },
+};
 function update(dt) {}
 
-let bgs = ["#f7fafc", "#fff5f5", "#ebf4ff"];
 function render() {
+  c.fillStyle = PALETTE[turn]["000"];
+  c.fillRect(0, 0, a.width, a.height);
+
   c.strokeStyle = "#000";
   c.lineWidth = 4;
 
-  c.fillStyle = bgs[WINNING];
-  c.fillRect(0, 0, a.width, a.height);
   regions.forEach(drawRegion);
 
   drawPollHistory();
 
-  c.fillStyle = turn;
+  c.fillStyle = PALETTE[turn][600];
   c.fillRect(pointer.x - 15, pointer.y - 15, 30, 30);
 }
 

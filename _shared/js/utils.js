@@ -4,6 +4,10 @@ import { init, keyPressed } from "./vendor/kontra.min.js";
  * CANVAS
  */
 
+export function comma(number) {
+  return Number(number).toLocaleString();
+}
+
 // Split the text into lines that will fit on the card
 export function wrapText(text, width) {
   let words = text.split(" ");
