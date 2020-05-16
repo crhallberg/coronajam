@@ -12,4 +12,4 @@
   - [ ] \$100 to fly
   - [ ] \$1000 for TV ad
 - [ ] Income
-- [ ] \$10 per face?
+  - [ ] \$10 per face?

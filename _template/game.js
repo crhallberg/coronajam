@@ -1,14 +1,8 @@
-import kontra from "./vendor/kontra.min.js";
-const { GameLoop, keyPressed } = kontra;
+import kontra from "../shared/js/vendor/kontra.min.js";
+import { _setup, log } from "../shared/js/utils.js";
 
-/**
- * SETUP
- */
-let a = document.getElementById("a");
-a.width = a.offsetWidth;
-a.height = a.offsetHeight;
-
-let { context: c } = kontra.init(a);
+const { GameLoop } = kontra;
+let { a, c } = _setup("a");
 
 /**
  * GameLoop

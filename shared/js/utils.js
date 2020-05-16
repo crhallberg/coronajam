@@ -1,3 +1,13 @@
+import { init, keyPressed } from "./vendor/kontra.min.js";
+
+export function _setup(id) {
+  document.getElementById(id);
+  a.width = a.offsetWidth;
+  a.height = a.offsetHeight;
+  let { context: c } = init(a);
+  return { a, c };
+}
+
 /**
  * Get joystick angle and isButtonPressed
  */
