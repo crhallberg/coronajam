@@ -40,13 +40,27 @@ export function wrapText(text, width) {
   return lines;
 }
 export function _setup(id) {
-  document.getElementById(id);
+  let a = document.getElementById(id);
   a.width = a.offsetWidth;
   a.height = a.offsetHeight;
   let { context: c } = init(a);
   c.textAlign = "left";
   c.textBaseline = "top";
   c.font = `500 24px Inter`;
+
+  window.addEventListener(
+    "resize",
+    () => {
+      a.width = a.offsetWidth;
+      a.height = a.offsetHeight;
+      c = a.getContext("2d");
+      c.textAlign = "left";
+      c.textBaseline = "top";
+      c.font = `500 24px Inter`;
+    },
+    false
+  );
+
   return { a, c };
 }
 

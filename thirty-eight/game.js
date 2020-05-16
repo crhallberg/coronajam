@@ -9,8 +9,6 @@ let { a, c } = _setup("a");
 const { initPointer, onPointerDown, onPointerUp, pointer } = kontra;
 initPointer();
 
-let regionWidth = 400;
-let regionHeight = 100;
 function makeRegion({ x, y, type }) {
   let startingSides = 1;
   if (type == "suburban") {
@@ -36,6 +34,8 @@ let typeFills = {
   suburban: PALETTE.orange[100],
   urban: PALETTE.purple[100],
 };
+let regionWidth = 400;
+let regionHeight = 90;
 function drawRegion(region) {
   c.save();
   c.translate(region.x, region.y);
@@ -56,12 +56,13 @@ function drawRegion(region) {
   }
   c.fillStyle = PALETTE.blue[faceShade];
   for (let i = 0; i < region.blue; i++) {
-    c.fillRect(i * 40 + 10, 60, 30, 30);
+    c.fillRect(i * 40 + 10, regionHeight - 40, 30, 30);
   }
   c.restore();
 }
 
 let regions = [];
+let regionSpread = spread(20, a.height - 20 - regionHeight, 7);
 for (let i = 0; i < 7; i++) {
   let type = "urban";
   if (i >= 3) {
@@ -72,7 +73,7 @@ for (let i = 0; i < 7; i++) {
   regions.push(
     makeRegion({
       x: 16,
-      y: i * 110 + 16,
+      y: regionSpread(i),
       type,
     })
   );
@@ -337,7 +338,8 @@ function hideMoveButtons() {
   moveBtns.forEach((btn) => (btn.active = false));
 }
 
-let actionBtnX = a.width / 2;
+let actionBtnWidth = 350;
+let actionBtnX = (a.width - actionBtnWidth) / 2 + 100;
 let spaceActionBtns = spread(200, 500, 5);
 let actionBtns = [];
 let moveAction = makeButton({
@@ -345,7 +347,7 @@ let moveAction = makeButton({
   cost: 10,
   x: actionBtnX,
   y: spaceActionBtns(0),
-  width: 350,
+  width: actionBtnWidth,
   action: showMoveButtons,
 });
 actionBtns.push(moveAction);
@@ -370,7 +372,7 @@ let rallyAction = makeButton({
   cost: 50,
   x: actionBtnX,
   y: spaceActionBtns(1),
-  width: 350,
+  width: actionBtnWidth,
   action: function () {
     resetButtons();
     rallyConfirm.active = true;
@@ -383,7 +385,7 @@ let flyAction = makeButton({
   cost: 100,
   x: actionBtnX,
   y: spaceActionBtns(2),
-  width: 350,
+  width: actionBtnWidth,
   action: function () {
     isFlying = true;
     resetButtons();
@@ -398,7 +400,7 @@ let attackAction = makeButton({
   cost: 1000,
   x: actionBtnX,
   y: spaceActionBtns(3),
-  width: 350,
+  width: actionBtnWidth,
   action: function () {
     resetButtons();
     attackBtns.forEach((btn) => (btn.active = true));
@@ -412,7 +414,7 @@ let tvAction = makeButton({
   cost: 2000,
   x: actionBtnX,
   y: spaceActionBtns(4),
-  width: 350,
+  width: actionBtnWidth,
   action: function () {
     resetButtons();
     tvRegionBtns.forEach((btn) => (btn.active = true));
