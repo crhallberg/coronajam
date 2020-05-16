@@ -1,5 +1,5 @@
-import kontra from "../shared/js/vendor/kontra.min.js";
-import { _setup, log } from "../shared/js/utils.js";
+import kontra from "../_shared/js/vendor/kontra.min.js";
+import { _setup, log } from "../_shared/js/utils.js";
 
 const { GameLoop } = kontra;
 let { a, c } = _setup("a");
