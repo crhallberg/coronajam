@@ -190,7 +190,7 @@ function drawPlayer(player, i) {
 
   if (turn === i) {
     c.fillStyle = PALETTE[player.color][700];
-    c.fillRect(a.width - 220, i * 40 + 10, 300, 40);
+    c.fillRect(a.width - 220, (i + 1) * 40 + 10, 300, 40);
     c.fillStyle = "#fff";
   } else {
     c.fillStyle = PALETTE[player.color][700];
@@ -198,7 +198,7 @@ function drawPlayer(player, i) {
   c.fillText(
     `${player.name}: $${player.money.toFixed(2)}`,
     a.width - 200,
-    i * 40 + 20
+    (i + 1) * 40 + 20
   );
 }
 
@@ -410,8 +410,8 @@ actionBtns.push(attackAction);
 buttons.push(attackAction);
 
 let tvAction = makeButton({
-  text: "BUY TV AD ($2000)",
-  cost: 2000,
+  text: "BUY TV AD ($1000)",
+  cost: 1000,
   x: actionBtnX,
   y: spaceActionBtns(4),
   width: actionBtnWidth,
@@ -432,7 +432,7 @@ let tvUrban = makeButton({
   height: 60,
   active: false,
   action: function () {
-    PLAYERS[turn].money -= 2000;
+    PLAYERS[turn].money -= 1000;
     let c = PLAYERS[turn].color;
     regions.forEach((r) => (r[c] += r.type == "urban" ? 4 : 0));
     nextTurn();
@@ -528,6 +528,12 @@ function render() {
 
   c.fillStyle = PALETTE[color][600];
   c.fillRect(pointer.x - 15, pointer.y - 15, 30, 30);
+
+  c.save();
+  c.fillStyle = PALETTE.gray[700];
+  c.textAlign = "right";
+  c.fillText(`${Math.ceil((40 - round)/2)} rounds remaining`, a.width - 16, 16);
+  c.restore();
 }
 
 let loop = new GameLoop({ update, render, clearFn: false });
