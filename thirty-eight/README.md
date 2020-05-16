@@ -2,9 +2,9 @@
 
 ## Todo
 
-- [ ] Regions
-- [ ] Dice Rolling
-- [ ] Predictions
+- [x] Regions
+- [x] Dice Rolling
+- [x] Predictions
 - [ ] Dice Adding
 - [ ] Map Layout
 - [ ] Prices

@@ -1,10 +1,35 @@
 import { init, keyPressed } from "./vendor/kontra.min.js";
 
+/**
+ * CANVAS
+ */
+
+// Split the text into lines that will fit on the card
+export function wrapText(text, width) {
+  let words = text.split(" ");
+  let lines = [];
+  let prev = words[0];
+  let curr = words[0];
+  for (let i = 1; i < words.length; i++) {
+    curr += " " + words[i];
+    let tm = c.measureText(curr);
+    if (tm.width > width - 5) {
+      lines.push(prev);
+      curr = words[i];
+    }
+    prev = curr;
+  }
+  lines.push(curr);
+  return lines;
+}
 export function _setup(id) {
   document.getElementById(id);
   a.width = a.offsetWidth;
   a.height = a.offsetHeight;
   let { context: c } = init(a);
+  c.textAlign = "left";
+  c.textBaseline = "top";
+  c.font = `500 24px Inter`;
   return { a, c };
 }
 
@@ -48,7 +73,7 @@ export function getControllerState() {
  */
 export const log = console.log.bind(console);
 
-let DEBUG = true;
+export let DEBUG = true;
 export function debug(msg) {
   if (DEBUG) {
     console.log(msg);
@@ -56,8 +81,27 @@ export function debug(msg) {
 }
 
 /**
+ * RANDOMNESS
+ */
+
+export function rand(min, max) {
+  if (typeof max == "undefined") {
+    max = min;
+    min = 0;
+  }
+  return Math.random() * (max - min) + min;
+}
+export function pickRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+export function shuffle(arr) {
+  arr.sort((a, b) => Math.random() * 2 - 1); // Random number instead of comparison
+}
+
+/**
  * MATH
  */
+
 /**
  * Angle conversions
  */
