@@ -8,6 +8,19 @@ export function comma(number) {
   return Number(number).toLocaleString();
 }
 
+export function spread(from, to, num) {
+  let step = (to - from) / (num - 1);
+  return (i) => {
+    if (i === 0) {
+      return from;
+    }
+    if (i === num - 1) {
+      return to;
+    }
+    return from + i * step;
+  };
+}
+
 // Split the text into lines that will fit on the card
 export function wrapText(text, width) {
   let words = text.split(" ");

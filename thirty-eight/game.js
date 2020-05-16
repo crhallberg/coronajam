@@ -1,14 +1,16 @@
 import kontra from "../_shared/js/vendor/kontra.min.js";
-import { _setup, comma } from "../_shared/js/utils.js";
+import { _setup, comma, spread } from "../_shared/js/utils.js";
 
 import PALETTE from "./primer-colors.js";
 
 const { GameLoop } = kontra;
 let { a, c } = _setup("a");
 
-const { initPointer, onPointerDown, pointer } = kontra;
+const { initPointer, onPointerDown, onPointerUp, pointer } = kontra;
 initPointer();
 
+let regionWidth = 300;
+let regionHeight = 100;
 function makeRegion({ x, y, type }) {
   let startingSides = 1;
   if (type == "suburban") {
@@ -22,8 +24,8 @@ function makeRegion({ x, y, type }) {
     type,
     red: startingSides,
     blue: startingSides,
-    width: 300,
-    height: 100,
+    width: regionWidth,
+    height: regionHeight,
   };
   // console.log( r);
   return r;
@@ -178,45 +180,261 @@ function drawPollHistory() {
   c.restore();
 }
 
-let turn = "red";
+function drawPlayer(player, i) {
+  c.fillStyle = PALETTE[player.color][400];
+  c.save();
+  c.translate(
+    regions[player.visiting].x + regionWidth + 80 * (i + 1),
+    regions[player.visiting].y + regionHeight / 2
+  );
+  c.rotate(Math.PI / 4);
+  c.fillRect(-40, -40, 80, 80);
+  c.restore();
+
+  if (turn === i) {
+    c.fillStyle = PALETTE[player.color][700];
+    c.fillRect(a.width - 220, i * 40 + 10, 300, 40);
+    c.fillStyle = "#fff";
+  } else {
+    c.fillStyle = PALETTE[player.color][700];
+  }
+  c.fillText(
+    `${player.name}: $${player.money.toFixed(2)}`,
+    a.width - 200,
+    i * 40 + 20
+  );
+}
+
+function income() {
+  let c = PLAYERS[turn].color;
+  PLAYERS[turn].money += regions.reduce((s, r) => s + r[c] * 5, 0);
+}
+
 onPointerDown(function mouseDown() {
-  for (let i = 0; i < regions.length; i++) {
-    let rx = pointer.x - regions[i].x;
-    let ry = pointer.y - regions[i].y;
-    if (rx > 0 && ry > 0 && rx < regions[i].width && ry < regions[i].height) {
-      regions[i][turn] += 1;
-      requestAnimationFrame(calculateOdds);
-      turn = turn == "red" ? "blue" : "red";
-      break;
+  for (let i = 0; i < buttons.length; i++) {
+    if (buttons[i].active && !buttons[i].disabled) {
+      let bx = pointer.x - buttons[i].x;
+      let by = pointer.y - buttons[i].y;
+      if (bx > 0 && by > 0 && bx < buttons[i].width && by < buttons[i].height) {
+        buttons[i].action();
+        buttons[i].pressed = true;
+        break;
+      }
     }
   }
 });
+onPointerUp(function mouseUp() {
+  buttons.forEach((btn) => (btn.pressed = false));
+});
 
-calculateOdds();
+function drawButton(btn) {
+  if (!btn.active) {
+    return;
+  }
+  c.save();
+  if (btn.pressed) {
+    c.translate(0, 8);
+    c.fillStyle = PALETTE.gray[700];
+    c.strokeStyle = PALETTE.gray[700];
+    c.fillRect(btn.x, btn.y, btn.width, btn.height);
+    c.strokeRect(btn.x, btn.y, btn.width, btn.height);
+    c.fillStyle = "#fff";
+  } else {
+    if (btn.disabled) {
+      c.fillStyle = PALETTE.gray[300];
+      c.fillRect(btn.x, btn.y, btn.width, btn.height);
+    } else {
+      c.fillStyle = "rgba(0,0,0,.5)";
+      c.fillRect(btn.x, btn.y + 8, btn.width, btn.height);
+      c.fillStyle = "#fff";
+      c.fillRect(btn.x, btn.y, btn.width, btn.height);
+      c.strokeRect(btn.x, btn.y, btn.width, btn.height);
+    }
+    c.fillStyle = "#000";
+  }
+
+  c.textAlign = "center";
+  c.textBaseline = "middle";
+  if (typeof btn.text == "string") {
+    c.fillText(btn.text, btn.x + btn.width / 2, btn.y + btn.height / 2);
+  } else {
+    let offset = (btn.text.length - 1) / 2;
+    for (let i = 0; i < btn.text.length; i++) {
+      c.fillText(
+        btn.text[i],
+        btn.x + btn.width / 2,
+        btn.y + btn.height / 2 + 24 * (i - offset)
+      );
+    }
+  }
+  c.restore();
+}
+
+function makeButton(btn) {
+  return Object.assign({}, btn, {
+    active: btn.active ?? true,
+    width: btn.width ?? c.measureText(text) + 32,
+    height: btn.height ?? 50,
+    disabled: btn.disabled ?? false,
+  });
+}
+
+let buttons = [];
+let network = {
+  0: new Set([1, 2]),
+  1: new Set([0, 2, 3, 5]),
+  2: new Set([0, 1, 4, 6]),
+  3: new Set([1, 4]),
+  4: new Set([2, 3, 5]),
+  5: new Set([1, 4, 6]),
+  6: new Set([2, 5]),
+};
+let moveBtns = [];
+function movePlayerTo(index) {
+  PLAYERS[turn].visiting = index;
+  PLAYERS[turn].money -= 10;
+  regions[index][PLAYERS[turn].color] += 1;
+  nextTurn();
+}
+for (let i = 0; i < regions.length; i++) {
+  let r = regions[i];
+  let btn = makeButton({
+    text: ["Visit", "Here"],
+    x: r.x + regionWidth - 100,
+    y: r.y + regionHeight / 2 - 30,
+    width: 80,
+    height: 60,
+    action: () => movePlayerTo(i),
+    active: false,
+  });
+  moveBtns.push(btn);
+  buttons.push(btn);
+}
+function showMoveButtons() {
+  resetButtons();
+  let start = PLAYERS[turn].visiting;
+  moveBtns.forEach((btn, i) => {
+    btn.active = network[start].has(i);
+  });
+}
+function hideMoveButtons() {
+  moveBtns.forEach((btn) => (btn.active = false));
+}
+
+let spaceBtns = spread(200, 500, 5);
+let actionBtns = [];
+let moveAction = makeButton({
+  text: "MOVE ($10)",
+  cost: 10,
+  x: a.width / 2 - 100,
+  y: spaceBtns(0),
+  width: 350,
+  action: showMoveButtons,
+});
+actionBtns.push(moveAction);
+buttons.push(moveAction);
+
+let rallyAction = makeButton({
+  text: "HOLD RALLY ($50)",
+  cost: 50,
+  x: a.width / 2 - 100,
+  y: spaceBtns(1),
+  width: 350,
+  action: function () {
+    regions[PLAYERS[turn].visiting][PLAYERS[turn].color] += 2;
+    nextTurn();
+  },
+});
+actionBtns.push(rallyAction);
+buttons.push(rallyAction);
+
+let flyAction = makeButton({
+  text: "FLY ($100)",
+  cost: 100,
+  x: a.width / 2 - 100,
+  y: spaceBtns(2),
+  width: 350,
+  action: function () {
+    moveBtns.forEach((btn) => (btn.active = true));
+  },
+});
+actionBtns.push(flyAction);
+buttons.push(flyAction);
+
+let attackAction = makeButton({
+  text: "RUN ATTACK AD ($1000)",
+  cost: 1000,
+  x: a.width / 2 - 100,
+  y: spaceBtns(3),
+  width: 350,
+  action: function () {
+    // TODO:
+  },
+});
+actionBtns.push(attackAction);
+buttons.push(attackAction);
+
+let tvAction = makeButton({
+  text: "BUY TV AD ($2000)",
+  cost: 2000,
+  x: a.width / 2 - 100,
+  y: spaceBtns(4),
+  width: 350,
+  action: function () {
+    // TODO:
+  },
+});
+actionBtns.push(tvAction);
+buttons.push(tvAction);
+
+function resetButtons() {
+  hideMoveButtons();
+  actionBtns.forEach((btn) => (btn.disabled = btn.cost > PLAYERS[turn].money));
+}
 
 /**
  * GameLoop
  */
-let PLAYERS = {
-  red: { visiting: 0, money: 0 },
-  blue: { visiting: 0, money: 0 },
-};
+let turn = -1;
+let PLAYERS = [
+  { color: "red", name: "Chris", visiting: 0, money: 0 },
+  { color: "blue", name: "Nicole", visiting: 0, money: 0 },
+];
+
+function nextTurn() {
+  turn = (turn + 1) % PLAYERS.length;
+  requestAnimationFrame(calculateOdds);
+  income();
+  resetButtons();
+}
+
 function update(dt) {}
 
+let action = "move";
+let drawMove = {
+  move: showMoveButtons,
+};
 function render() {
-  c.fillStyle = PALETTE[turn]["000"];
+  let color = PLAYERS[turn].color;
+  c.fillStyle = PALETTE[color]["000"];
   c.fillRect(0, 0, a.width, a.height);
 
-  c.strokeStyle = "#000";
+  c.strokeStyle = PALETTE.gray[900];
   c.lineWidth = 4;
 
   regions.forEach(drawRegion);
 
+  buttons.forEach(drawButton);
+
   drawPollHistory();
 
-  c.fillStyle = PALETTE[turn][600];
+  PLAYERS.forEach(drawPlayer);
+
+  c.fillStyle = PALETTE[color][600];
   c.fillRect(pointer.x - 15, pointer.y - 15, 30, 30);
 }
 
 let loop = new GameLoop({ update, render, clearFn: false });
+
+nextTurn();
 loop.start();
