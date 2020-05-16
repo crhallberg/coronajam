@@ -299,7 +299,7 @@ function movePlayerTo(index) {
 for (let i = 0; i < regions.length; i++) {
   let r = regions[i];
   let btn = makeButton({
-    text: ["Visit", "Here"],
+    text: "Visit",
     x: r.x + regionWidth - 100,
     y: r.y + regionHeight / 2 - 30,
     width: 80,
@@ -355,7 +355,7 @@ let flyAction = makeButton({
   y: spaceBtns(2),
   width: 350,
   action: function () {
-    moveBtns.forEach((btn) => (btn.active = true));
+    moveBtns.forEach((btn, i) => (btn.active = i !== PLAYERS[turn].visiting));
   },
 });
 actionBtns.push(flyAction);
