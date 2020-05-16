@@ -15,3 +15,9 @@ Need to remember to end all of my commits with EXCLAMATION MARKS!!
 ## 11:10
 
 Lunch Break!
+
+## 16:00
+
+First game has reached minimal play status.
+
+First shot of Fireball taken. Wow! It's worse than I forgot!
