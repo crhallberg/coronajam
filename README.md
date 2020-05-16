@@ -28,6 +28,12 @@ Ok, this is a political dice roller to answer the question: is a game fun if the
 
 Thank you to Nicole for hashing this idea out with me while I did the dishes!
 
+### Last Cast
+
+[Code](./lastcast) / Hosted (Coming Soon)
+
+A press-your-luck dungeon crawler inspired by DND spell-casting. Concentrate!
+
 ## Other Experiments
 
 ### Pomodoro Drafting

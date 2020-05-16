@@ -21,3 +21,7 @@ Lunch Break!
 First game has reached minimal play status.
 
 First shot of Fireball taken. Wow! It's worse than I forgot!
+
+## 17:00
+
+Round 2. Fight!

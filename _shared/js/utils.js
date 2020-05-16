@@ -73,7 +73,25 @@ export function getControllerState() {
   let gamepad = navigator.getGamepads()[0];
   if (!gamepad) {
     let button = keyPressed("space");
-    let ret = { angle: null, button, down: button && !lastControllerButton };
+    let dx = 0;
+    let dy = 0;
+    if (keyPressed("a") || keyPressed("left")) {
+      dx -= 1;
+    }
+    if (keyPressed("w") || keyPressed("up")) {
+      dy -= 1;
+    }
+    if (keyPressed("d") || keyPressed("right")) {
+      dx += 1;
+    }
+    if (keyPressed("s") || keyPressed("down")) {
+      dy += 1;
+    }
+    let ret = {
+      angle: (dx != 0 || dy != 0) ? Math.atan2(dy, dx) : null,
+      button,
+      down: button && !lastControllerButton,
+    };
     lastControllerButton = button;
     return ret;
   }
