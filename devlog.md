@@ -11,3 +11,7 @@ Moved a ton of stuff to shared assets. Probably the best move for lots of little
 Starting to regret the Pomodoro method already.
 
 Need to remember to end all of my commits with EXCLAMATION MARKS!!
+
+## 11:10
+
+Lunch Break!
