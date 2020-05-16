@@ -20,7 +20,19 @@ I'll be eating only a [complete protein](https://www.foodnetwork.com/recipes/alt
 
 ## The Games
 
-TBD
+### Thirty-Eight (WT)
+
+[Code](./thirty-eight) / Hosted (Coming Soon)
+
+Ok, this is a political dice roller to answer the question: is a game fun if the AI tells you who's going to win?
+
+Thank you to Nicole for hashing this idea out with me while I did the dishes!
+
+## Other Experiments
+
+### Pomodoro Drafting
+
+I'm going to code for 25 minutes, test/play for 5. No looking when coding, drafting style.
 
 ## Credits
 
