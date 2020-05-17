@@ -1,5 +1,5 @@
 import kontra from "../_shared/js/vendor/kontra.min.js";
-import { _setup, getControllerState } from "../_shared/js/utils.js";
+import { _setup, rand, getControllerState } from "../_shared/js/utils.js";
 import PALETTE from "../_shared/primer-colors.js";
 import { rectRect } from "../_shared/js/collision.js";
 
@@ -25,18 +25,28 @@ let gridIso = gridSize / 3;
 //   .then((data) => data.json())
 //   .then((json) => (WALLS = QuadTree.fromJSON(json)));
 
-let WALLS = [];
-WALLS.push({
-  x: 510,
-  y: 300 + gridSize,
-  w: gridSize,
-  h: gridSize * 10,
+let FLOORS = [
+  { x: -8, y: -8, w: 17, h: 17 },
+].map(({ x, y, w, h }) => {
+  return {
+    x: x * gridSize,
+    y: y * gridSize,
+    w: w * gridSize,
+    h: h * gridSize,
+  };
 });
-WALLS.push({
-  x: 500,
-  y: 300,
-  w: gridSize * 10,
-  h: gridSize,
+let WALLS = [
+  { x: -8, y: -8, w: 17, h: 1 },
+  { x: -8, y: -8, w: 1, h: 16 },
+  { x: -8, y: 8, w: 17, h: 1 },
+  { x: 8, y: -8, w: 1, h: 16 },
+].map(({ x, y, w, h }) => {
+  return {
+    x: x * gridSize,
+    y: y * gridSize,
+    w: w * gridSize,
+    h: h * gridSize,
+  };
 });
 
 function drawWallTop({ x, y, w, h }) {
@@ -47,10 +57,14 @@ function drawWallBottom({ x, y, w, h }) {
   c.fillStyle = PALETTE.gray[800];
   c.fillRect(x, y, w, h);
 }
+function drawFloor({ x, y, w, h }) {
+  c.fillStyle = PALETTE.gray[900];
+  c.fillRect(x, y - gridSize, w, h);
+}
 
 let SCREEN = {
-  x: 0,
-  y: 0,
+  x: -a.width / 2,
+  y: -a.height / 2,
   w: a.width,
   h: a.height,
   dx: 0,
@@ -99,8 +113,8 @@ function collide() {
  * GameLoop
  */
 let PLAYER = {
-  x: a.width / 2,
-  y: a.height / 2,
+  x: 0,
+  y: 0,
   dx: 0,
   dy: 0,
   w: gridSize,
@@ -148,8 +162,10 @@ function render() {
   c.save(); // camera
   c.translate(-SCREEN.x, -SCREEN.y);
 
+  FLOORS.forEach(drawFloor);
+
   if (HELD) {
-    c.fillStyle = PALETTE.pink[100];
+    c.fillStyle = PALETTE.pink[900];
     c.fillRect(
       HELD.x - gridHalf,
       HELD.y - gridHalf,
