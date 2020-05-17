@@ -59,7 +59,6 @@ fetch("./walls.json")
       w: 5 * gridSize,
       h: 10 * gridSize,
     });
-    console.log(WALLS.length);
   });
 
 function drawWallTop({ x, y, w, h }) {
@@ -162,11 +161,12 @@ function update(dt) {
 
 let HELD = null;
 bindKeys("shift", function () {
-  HELD = {
-    x: PLAYER.x,
-    y: PLAYER.y,
-  };
-  console.log(HELD);
+  if (!HELD) {
+    HELD = {
+      x: PLAYER.x,
+      y: PLAYER.y,
+    };
+  }
 });
 
 function render() {
