@@ -15,19 +15,7 @@ let gridSize = Math.min(44, Math.floor(a.width / 42) * 2);
 let gridHalf = gridSize / 2;
 let gridIso = gridSize / 3;
 
-// DON'T GET AHEAD OF YOURSELF
-// let WALLS = new QuadTree(
-//   new Rectangle(a.width / 2, a.height / 2, a.width, a.height),
-//   4
-// );
-// WALLS.add(
-// fetch("./walls.json")
-//   .then((data) => data.json())
-//   .then((json) => (WALLS = QuadTree.fromJSON(json)));
-
-let FLOORS = [
-  { x: -8, y: -8, w: 17, h: 17 },
-].map(({ x, y, w, h }) => {
+let FLOORS = [{ x: -8, y: -8, w: 17, h: 17 }].map(({ x, y, w, h }) => {
   return {
     x: x * gridSize,
     y: y * gridSize,
@@ -38,7 +26,7 @@ let FLOORS = [
 let WALLS = [
   { x: -8, y: -8, w: 17, h: 1 },
   { x: -8, y: -8, w: 1, h: 16 },
-  { x: -8, y: 8, w: 17, h: 1 },
+  // { x: -8, y: 8, w: 17, h: 1 },
   { x: 8, y: -8, w: 1, h: 16 },
 ].map(({ x, y, w, h }) => {
   return {
@@ -48,6 +36,31 @@ let WALLS = [
     h: h * gridSize,
   };
 });
+fetch("./walls.json")
+  .then((data) => data.json())
+  .then((json) => {
+    for (let { x, y, w, h } of json) {
+      WALLS.push({
+        x: x * gridSize + rand(-gridSize / 5, gridSize / 5),
+        y: (y - 1) * gridSize + rand(-gridSize / 5, gridSize / 5),
+        w: (w ?? 1) * gridSize,
+        h: (h ?? 1) * gridSize,
+      });
+    }
+    FLOORS.push({
+      x: -19 * gridSize,
+      y: 9 * gridSize,
+      w: 39 * gridSize,
+      h: 40 * gridSize,
+    });
+    FLOORS.push({
+      x: -2 * gridSize,
+      y: 49 * gridSize,
+      w: 5 * gridSize,
+      h: 10 * gridSize,
+    });
+    console.log(WALLS.length);
+  });
 
 function drawWallTop({ x, y, w, h }) {
   c.fillStyle = PALETTE.gray[500];
